@@ -5,6 +5,7 @@ import (
 	"golangReact/controllers"
 	"golangReact/middlewares"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 )
 
 func SetupRouter() *gin.Engine {
@@ -12,6 +13,13 @@ func SetupRouter() *gin.Engine {
 
 	//initialize gin
 	router := gin.Default()
+// set up CORS
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"*"},
+		AllowMethods:  []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:  []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders: []string{"Content-Length"},
+	}))
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -24,6 +32,7 @@ func SetupRouter() *gin.Engine {
 	router.POST("/api/login", controllers.Login)
 	router.POST("/api/PostUser", middlewares.AuthMiddleware(), controllers.CreateUser)
 	router.GET("/api/getUser", controllers.FindUsers)
+	router.GET("/api/getUser/:id", controllers.FindUserById)
 	router.GET("/api/insertMillionUser", controllers.InsertMillionUsers)
 	router.POST("/api/import-csv", controllers.ImportUsersFromCSV)
 	return router

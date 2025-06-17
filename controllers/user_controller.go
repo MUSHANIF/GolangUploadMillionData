@@ -97,12 +97,12 @@ func InsertMillionUsers(c *gin.Context) {
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
-            users = users[:0] // reset slice
+            users = users[:0] 
             log.Printf("Inserted batch %d", i/batchSize)
         }
     }
 
-    // Insert remaining
+    
     if len(users) > 0 {
         database.DB.CreateInBatches(users, batchSize)
     }
@@ -174,4 +174,40 @@ func ImportUsersFromCSV(c *gin.Context) {
 
 	duration := time.Since(start)
 	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Imported %d users", len(users)), "duration": duration.String()})
+}
+
+func FindUserById(c *gin.Context) {
+	id := c.Param("id")
+
+	user := models.User{}
+	if err := database.DB.First(&user, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, structs.ErrorResponse{
+				Success: false,
+				Message: "User not found",
+				Errors:  helpers.TranslateErrorMessage(err),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
+			Success: false,
+			Message: "Failed to retrieve user",
+			Errors:  helpers.TranslateErrorMessage(err),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, structs.SuccessResponse{
+		Success: true,
+		Message: "User retrieved successfully",
+		Data: structs.UserResponse{
+			Id:        user.Id,
+			Name:      user.Name,
+			Username:  user.Username,
+			Email:     user.Email,
+			CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt: user.UpdatedAt.Format("2006-01-02 15:04:05"),
+		},
+	})
+
 }
