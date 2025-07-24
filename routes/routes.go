@@ -35,6 +35,7 @@ func SetupRouter() *gin.Engine {
 	router.GET("/api/getUser/:id", controllers.FindUserById)
 	router.GET("/api/insertMillionUser", controllers.InsertMillionUsers)
 	router.POST("/api/import-csv", controllers.ImportUsersFromCSV)
+	router.POST("/api/import-declare", controllers.ImportDeclareFromCSV)
 	return router
 }
 
